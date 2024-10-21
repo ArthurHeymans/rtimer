@@ -1,7 +1,7 @@
 use clap::Parser;
 use std::path::PathBuf;
 use std::time::Duration;
-use chrono::Local;
+use chrono::{Local, Timelike};
 use std::{thread, time};
 use rodio::{Decoder, OutputStream, Sink};
 use std::fs::File;
@@ -30,16 +30,20 @@ fn create_ascii_clock(hours: u32, minutes: u32) -> Vec<String> {
 
     // Place hour hand
     if let Some(line) = clock.get_mut((3 + hour_y) as usize) {
-        if let Some(ch) = line.get_mut((7 + hour_x) as usize) {
+        let mut chars: Vec<char> = line.chars().collect();
+        if let Some(ch) = chars.get_mut((7 + hour_x) as usize) {
             *ch = 'H';
         }
+        *line = chars.into_iter().collect();
     }
 
     // Place minute hand
     if let Some(line) = clock.get_mut((3 + minute_y) as usize) {
-        if let Some(ch) = line.get_mut((7 + minute_x) as usize) {
+        let mut chars: Vec<char> = line.chars().collect();
+        if let Some(ch) = chars.get_mut((7 + minute_x) as usize) {
             *ch = 'M';
         }
+        *line = chars.into_iter().collect();
     }
 
     clock
