@@ -1,12 +1,12 @@
+use chrono::{Local, NaiveTime, Timelike};
 use clap::Parser;
-use std::path::PathBuf;
-use std::time::Duration;
-use chrono::{Local, Timelike, NaiveTime};
-use std::{thread, time, str::FromStr};
+use notify_rust::Notification;
 use rodio::{Decoder, OutputStream, Sink};
 use std::io::Write;
-use termion::{clear, cursor, terminal_size, color};
-use notify_rust::Notification;
+use std::path::PathBuf;
+use std::time::Duration;
+use std::{str::FromStr, thread, time};
+use termion::{clear, color, cursor, terminal_size};
 
 fn create_ascii_clock(hours: u32, minutes: u32) -> Vec<String> {
     let mut clock = vec![
@@ -83,21 +83,25 @@ fn parse_time_or_duration(s: &str) -> Result<TimeOrDuration, String> {
 
 fn main() {
     let args = Args::parse();
-    
+
     let (end_time, duration_str, start_time) = match args.time {
         TimeOrDuration::Duration(duration) => {
             let start_time = Local::now();
             let end_time = start_time + chrono::Duration::from_std(duration).unwrap();
             (end_time, format!("{:?}", duration), start_time)
-        },
+        }
         TimeOrDuration::FixedTime(time) => {
             let now = Local::now();
-            let mut end_time = now.date_naive().and_time(time).and_local_timezone(Local).unwrap();
+            let mut end_time = now
+                .date_naive()
+                .and_time(time)
+                .and_local_timezone(Local)
+                .unwrap();
             if end_time <= now {
                 end_time = end_time + chrono::Duration::days(1);
             }
             (end_time, time.format("%H:%M:%S").to_string(), now)
-        },
+        }
     };
 
     println!("Timer set for {}", duration_str);
@@ -118,8 +122,8 @@ fn main() {
         let (width, height) = terminal_size().unwrap();
         let remaining_elapsed_str = format!(
             "Remaining: {:02}:{:02}:{:02} | Elapsed: {:02}:{:02}:{:02}",
-            remaining.num_hours(), 
-            remaining.num_minutes() % 60, 
+            remaining.num_hours(),
+            remaining.num_minutes() % 60,
             remaining.num_seconds() % 60,
             elapsed.num_hours(),
             elapsed.num_minutes() % 60,
@@ -130,39 +134,62 @@ fn main() {
             start_time.format("%H:%M:%S"),
             end_time.format("%H:%M:%S")
         );
-        
+
         let ascii_clock = create_ascii_clock(now.hour(), now.minute());
-        
+
         write!(stdout, "{}{}", clear::All, cursor::Goto(1, 1)).unwrap();
-        
+
         let clock_start_y = (height - ascii_clock.len() as u16 - 3) / 2;
         let clock_start_x = (width - ascii_clock[0].len() as u16) / 2;
-        
+
         for (i, line) in ascii_clock.iter().enumerate() {
-            write!(stdout, "{}", cursor::Goto(clock_start_x, clock_start_y + i as u16)).unwrap();
+            write!(
+                stdout,
+                "{}",
+                cursor::Goto(clock_start_x, clock_start_y + i as u16)
+            )
+            .unwrap();
             write!(stdout, "{}", color::Fg(color::Blue)).unwrap();
             write!(stdout, "{}", line).unwrap();
             write!(stdout, "{}", color::Fg(color::Reset)).unwrap();
         }
-        
-        write!(stdout, "{}", cursor::Goto((width - remaining_elapsed_str.len() as u16) / 2, clock_start_y + ascii_clock.len() as u16 + 1)).unwrap();
+
+        write!(
+            stdout,
+            "{}",
+            cursor::Goto(
+                (width - remaining_elapsed_str.len() as u16) / 2,
+                clock_start_y + ascii_clock.len() as u16 + 1
+            )
+        )
+        .unwrap();
         write!(stdout, "{}", color::Fg(color::Green)).unwrap();
         write!(stdout, "{}", remaining_elapsed_str).unwrap();
         write!(stdout, "{}", color::Fg(color::Reset)).unwrap();
 
-        write!(stdout, "{}", cursor::Goto((width - start_end_str.len() as u16) / 2, clock_start_y + ascii_clock.len() as u16 + 2)).unwrap();
+        write!(
+            stdout,
+            "{}",
+            cursor::Goto(
+                (width - start_end_str.len() as u16) / 2,
+                clock_start_y + ascii_clock.len() as u16 + 2
+            )
+        )
+        .unwrap();
         write!(stdout, "{}", color::Fg(color::Green)).unwrap();
         write!(stdout, "{}", start_end_str).unwrap();
         write!(stdout, "{}", color::Fg(color::Reset)).unwrap();
-        
+
         stdout.flush().unwrap();
         thread::sleep(time::Duration::from_secs(1));
     }
 
     write!(stdout, "{}{}\nTime's up!\n", clear::All, cursor::Goto(1, 1)).unwrap();
-    
+
     // Send notification
-    let notification_message = args.message.unwrap_or_else(|| "🐓 rtimer: time's up!".to_string());
+    let notification_message = args
+        .message
+        .unwrap_or_else(|| "🐓 rtimer: time's up!".to_string());
     Notification::new()
         .summary("rtimer")
         .body(&notification_message)
@@ -182,7 +209,9 @@ fn parse_duration(s: &str) -> Result<Duration, String> {
         if c.is_digit(10) {
             current_number.push(c);
         } else {
-            let number = current_number.parse::<u64>().map_err(|_| "Invalid number")?;
+            let number = current_number
+                .parse::<u64>()
+                .map_err(|_| "Invalid number")?;
             current_number.clear();
 
             match c {

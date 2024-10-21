@@ -9,6 +9,11 @@ fn main() {
     let mut f = File::create(&dest_path).unwrap();
 
     let rooster_mp3 = include_bytes!("rooster.mp3");
-    
-    writeln!(&mut f, "pub const ROOSTER_SOUND: &[u8] = &{:?};", rooster_mp3).unwrap();
+
+    writeln!(
+        &mut f,
+        "pub const ROOSTER_SOUND: &[u8] = &{:?};",
+        rooster_mp3
+    )
+    .unwrap();
 }
