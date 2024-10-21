@@ -96,7 +96,9 @@ fn main() {
         },
     };
 
-    println!("Timer set for {} at {}", duration_str, end_time.format("%H:%M:%S"));
+    println!("Timer set for {}", duration_str);
+    println!("Start time: {}", start_time.format("%H:%M:%S"));
+    println!("End time: {}", end_time.format("%H:%M:%S"));
     thread::sleep(time::Duration::from_secs(2));
 
     let mut stdout = std::io::stdout();
