@@ -80,11 +80,11 @@ fn parse_time_or_duration(s: &str) -> Result<TimeOrDuration, String> {
 fn main() {
     let args = Args::parse();
     
-    let (end_time, duration_str) = match args.time {
+    let (end_time, duration_str, start_time) = match args.time {
         TimeOrDuration::Duration(duration) => {
             let start_time = Local::now();
             let end_time = start_time + chrono::Duration::from_std(duration).unwrap();
-            (end_time, format!("{:?}", duration))
+            (end_time, format!("{:?}", duration), start_time)
         },
         TimeOrDuration::FixedTime(time) => {
             let now = Local::now();
@@ -92,7 +92,7 @@ fn main() {
             if end_time <= now {
                 end_time = end_time + chrono::Duration::days(1);
             }
-            (end_time, time.format("%H:%M:%S").to_string())
+            (end_time, time.format("%H:%M:%S").to_string(), now)
         },
     };
 
@@ -108,11 +108,15 @@ fn main() {
         }
 
         let remaining = end_time - now;
+        let elapsed = now - start_time;
         let (width, height) = terminal_size().unwrap();
-        let time_str = format!("{:02}:{:02}:{:02}", 
+        let time_str = format!("Remaining: {:02}:{:02}:{:02} | Elapsed: {:02}:{:02}:{:02}", 
                                remaining.num_hours(), 
                                remaining.num_minutes() % 60, 
-                               remaining.num_seconds() % 60);
+                               remaining.num_seconds() % 60,
+                               elapsed.num_hours(),
+                               elapsed.num_minutes() % 60,
+                               elapsed.num_seconds() % 60);
         
         let ascii_clock = create_ascii_clock(now.hour(), now.minute());
         
