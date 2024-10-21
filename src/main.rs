@@ -6,7 +6,20 @@ use std::{thread, time};
 use rodio::{Decoder, OutputStream, Sink};
 use std::fs::File;
 use std::io::{BufReader, Write};
-use termion::{clear, cursor, terminal_size};
+use termion::{clear, cursor, terminal_size, color};
+
+fn create_ascii_clock() -> Vec<String> {
+    vec![
+        "    .-.-.    ".to_string(),
+        "  .'     '.  ".to_string(),
+        " /  o   o  \\ ".to_string(),
+        "|    ___    |".to_string(),
+        "|   /   \\   |".to_string(),
+        " \\  \\___/  / ".to_string(),
+        "  '.     .' ".to_string(),
+        "    '---'    ".to_string(),
+    ]
+}
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -31,6 +44,8 @@ fn main() {
 
     let mut stdout = std::io::stdout();
 
+    let ascii_clock = create_ascii_clock();
+    
     loop {
         let now = Local::now();
         if now >= end_time {
@@ -46,19 +61,20 @@ fn main() {
         
         write!(stdout, "{}{}", clear::All, cursor::Goto(1, 1)).unwrap();
         
-        for y in 1..=height {
-            for x in 1..=width {
-                if y == height / 2 && x > (width - time_str.len() as u16) / 2 && x <= (width + time_str.len() as u16) / 2 {
-                    let char_index = (x - (width - time_str.len() as u16) / 2 - 1) as usize;
-                    write!(stdout, "{}", time_str.chars().nth(char_index).unwrap()).unwrap();
-                } else {
-                    write!(stdout, " ").unwrap();
-                }
-            }
-            if y < height {
-                write!(stdout, "\r\n").unwrap();
-            }
+        let clock_start_y = (height - ascii_clock.len() as u16) / 2;
+        let clock_start_x = (width - ascii_clock[0].len() as u16) / 2;
+        
+        for (i, line) in ascii_clock.iter().enumerate() {
+            write!(stdout, "{}", cursor::Goto(clock_start_x, clock_start_y + i as u16)).unwrap();
+            write!(stdout, "{}", color::Fg(color::Blue)).unwrap();
+            write!(stdout, "{}", line).unwrap();
+            write!(stdout, "{}", color::Fg(color::Reset)).unwrap();
         }
+        
+        write!(stdout, "{}", cursor::Goto((width - time_str.len() as u16) / 2, clock_start_y + ascii_clock.len() as u16 + 1)).unwrap();
+        write!(stdout, "{}", color::Fg(color::Green)).unwrap();
+        write!(stdout, "{}", time_str).unwrap();
+        write!(stdout, "{}", color::Fg(color::Reset)).unwrap();
         
         stdout.flush().unwrap();
         thread::sleep(time::Duration::from_secs(1));
