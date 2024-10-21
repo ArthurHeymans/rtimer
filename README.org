@@ -1,0 +1,82 @@
+#+TITLE: rtimer
+#+AUTHOR: Your Name
+#+DATE: [2023-07-05 Wed]
+
+* rtimer
+
+rtimer is a command-line countdown timer application written in Rust. It displays an ASCII clock and plays a sound when the timer expires.
+
+** Features
+
+- Set countdown timer with flexible duration formats (e.g., 1h30m, 45m, 30s)
+- Set timer to a specific time of day (e.g., 14:30:00)
+- ASCII clock display with colored hour and minute hands
+- Customizable alarm sound (default: rooster.mp3)
+- Shows remaining time and elapsed time
+
+** Installation
+
+To install rtimer, you need to have Rust and Cargo installed on your system. Then, follow these steps:
+
+1. Clone the repository:
+   #+BEGIN_SRC sh
+   git clone https://github.com/yourusername/rtimer.git
+   cd rtimer
+   #+END_SRC
+
+2. Build the project:
+   #+BEGIN_SRC sh
+   cargo build --release
+   #+END_SRC
+
+3. The binary will be available in =target/release/rtimer=
+
+** Usage
+
+Run rtimer with the following syntax:
+
+#+BEGIN_SRC sh
+rtimer [OPTIONS] <TIME>
+#+END_SRC
+
+- =<TIME>=: Duration of the timer (e.g., 10m, 1h30m) or fixed time (e.g., 14:30:00)
+
+Options:
+- =-s, --sound <FILE>=: Path to a custom sound file (default: rooster.mp3)
+- =-h, --help=: Print help information
+- =-V, --version=: Print version information
+
+Examples:
+
+1. Set a timer for 25 minutes:
+   #+BEGIN_SRC sh
+   rtimer 25m
+   #+END_SRC
+
+2. Set a timer for 1 hour and 30 minutes with a custom sound:
+   #+BEGIN_SRC sh
+   rtimer -s /path/to/custom/sound.mp3 1h30m
+   #+END_SRC
+
+3. Set a timer to go off at 2:30 PM:
+   #+BEGIN_SRC sh
+   rtimer 14:30:00
+   #+END_SRC
+
+** Dependencies
+
+rtimer uses the following Rust crates:
+- clap
+- rodio
+- chrono
+- termion
+
+These dependencies are managed by Cargo and will be automatically downloaded and compiled when building the project.
+
+** Contributing
+
+Contributions to rtimer are welcome! Please feel free to submit a Pull Request.
+
+** License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
