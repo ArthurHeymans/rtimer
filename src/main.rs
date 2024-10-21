@@ -112,13 +112,18 @@ fn main() {
         let remaining = end_time - now;
         let elapsed = now - start_time;
         let (width, height) = terminal_size().unwrap();
-        let time_str = format!("Remaining: {:02}:{:02}:{:02} | Elapsed: {:02}:{:02}:{:02}", 
-                               remaining.num_hours(), 
-                               remaining.num_minutes() % 60, 
-                               remaining.num_seconds() % 60,
-                               elapsed.num_hours(),
-                               elapsed.num_minutes() % 60,
-                               elapsed.num_seconds() % 60);
+        let time_str = format!(
+            "Remaining: {:02}:{:02}:{:02} | Elapsed: {:02}:{:02}:{:02}\n\
+             Start time: {} | End time: {}", 
+            remaining.num_hours(), 
+            remaining.num_minutes() % 60, 
+            remaining.num_seconds() % 60,
+            elapsed.num_hours(),
+            elapsed.num_minutes() % 60,
+            elapsed.num_seconds() % 60,
+            start_time.format("%H:%M:%S"),
+            end_time.format("%H:%M:%S")
+        );
         
         let ascii_clock = create_ascii_clock(now.hour(), now.minute());
         
