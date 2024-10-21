@@ -112,15 +112,17 @@ fn main() {
         let remaining = end_time - now;
         let elapsed = now - start_time;
         let (width, height) = terminal_size().unwrap();
-        let time_str = format!(
-            "Remaining: {:02}:{:02}:{:02} | Elapsed: {:02}:{:02}:{:02}\n\
-             Start time: {} | End time: {}", 
+        let remaining_elapsed_str = format!(
+            "Remaining: {:02}:{:02}:{:02} | Elapsed: {:02}:{:02}:{:02}",
             remaining.num_hours(), 
             remaining.num_minutes() % 60, 
             remaining.num_seconds() % 60,
             elapsed.num_hours(),
             elapsed.num_minutes() % 60,
-            elapsed.num_seconds() % 60,
+            elapsed.num_seconds() % 60
+        );
+        let start_end_str = format!(
+            "Start time: {} | End time: {}",
             start_time.format("%H:%M:%S"),
             end_time.format("%H:%M:%S")
         );
@@ -129,7 +131,7 @@ fn main() {
         
         write!(stdout, "{}{}", clear::All, cursor::Goto(1, 1)).unwrap();
         
-        let clock_start_y = (height - ascii_clock.len() as u16) / 2;
+        let clock_start_y = (height - ascii_clock.len() as u16 - 3) / 2;
         let clock_start_x = (width - ascii_clock[0].len() as u16) / 2;
         
         for (i, line) in ascii_clock.iter().enumerate() {
@@ -139,9 +141,14 @@ fn main() {
             write!(stdout, "{}", color::Fg(color::Reset)).unwrap();
         }
         
-        write!(stdout, "{}", cursor::Goto((width - time_str.len() as u16) / 2, clock_start_y + ascii_clock.len() as u16 + 1)).unwrap();
+        write!(stdout, "{}", cursor::Goto((width - remaining_elapsed_str.len() as u16) / 2, clock_start_y + ascii_clock.len() as u16 + 1)).unwrap();
         write!(stdout, "{}", color::Fg(color::Green)).unwrap();
-        write!(stdout, "{}", time_str).unwrap();
+        write!(stdout, "{}", remaining_elapsed_str).unwrap();
+        write!(stdout, "{}", color::Fg(color::Reset)).unwrap();
+
+        write!(stdout, "{}", cursor::Goto((width - start_end_str.len() as u16) / 2, clock_start_y + ascii_clock.len() as u16 + 2)).unwrap();
+        write!(stdout, "{}", color::Fg(color::Green)).unwrap();
+        write!(stdout, "{}", start_end_str).unwrap();
         write!(stdout, "{}", color::Fg(color::Reset)).unwrap();
         
         stdout.flush().unwrap();
