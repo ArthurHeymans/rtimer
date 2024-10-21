@@ -4,8 +4,7 @@ use std::time::Duration;
 use chrono::{Local, Timelike, NaiveTime};
 use std::{thread, time, str::FromStr};
 use rodio::{Decoder, OutputStream, Sink};
-use std::fs::File;
-use std::io::{BufReader, Write};
+use std::io::Write;
 use termion::{clear, cursor, terminal_size, color};
 use notify_rust::Notification;
 
