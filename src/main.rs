@@ -61,7 +61,7 @@ struct Args {
     time: TimeOrDuration,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum TimeOrDuration {
     Duration(Duration),
     FixedTime(NaiveTime),
@@ -88,7 +88,7 @@ fn main() {
         },
         TimeOrDuration::FixedTime(time) => {
             let now = Local::now();
-            let mut end_time = now.date().and_time(time);
+            let mut end_time = now.date_naive().and_time(time).and_local_timezone(Local).unwrap();
             if end_time <= now {
                 end_time = end_time + chrono::Duration::days(1);
             }
