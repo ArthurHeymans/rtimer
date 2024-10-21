@@ -98,7 +98,7 @@ fn main() {
                 .and_local_timezone(Local)
                 .unwrap();
             if end_time <= now {
-                end_time = end_time + chrono::Duration::days(1);
+                end_time += chrono::Duration::days(1);
             }
             (end_time, time.format("%H:%M:%S").to_string(), now)
         }
@@ -197,7 +197,7 @@ fn main() {
         .expect("Failed to send notification");
 
     // Play sound
-    write!(stdout, "Playing sound...\n").unwrap();
+    writeln!(stdout, "Playing sound...").unwrap();
     play_sound();
 }
 
@@ -206,7 +206,7 @@ fn parse_duration(s: &str) -> Result<Duration, String> {
     let mut current_number = String::new();
 
     for c in s.chars() {
-        if c.is_digit(10) {
+        if c.is_ascii_digit() {
             current_number.push(c);
         } else {
             let number = current_number
