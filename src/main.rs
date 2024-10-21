@@ -160,8 +160,7 @@ fn main() {
         thread::sleep(time::Duration::from_secs(1));
     }
 
-    write!(stdout, "{}{}\nTime's up! Playing sound...\n", clear::All, cursor::Goto(1, 1)).unwrap();
-    play_sound(&args.sound);
+    write!(stdout, "{}{}\nTime's up!\n", clear::All, cursor::Goto(1, 1)).unwrap();
     
     // Send notification
     let notification_message = args.message.unwrap_or_else(|| "rtimer: time's up!".to_string());
@@ -170,6 +169,10 @@ fn main() {
         .body(&notification_message)
         .show()
         .expect("Failed to send notification");
+
+    // Play sound
+    write!(stdout, "Playing sound...\n").unwrap();
+    play_sound(&args.sound);
 }
 
 fn parse_duration(s: &str) -> Result<Duration, String> {
