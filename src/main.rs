@@ -8,17 +8,41 @@ use std::fs::File;
 use std::io::{BufReader, Write};
 use termion::{clear, cursor, terminal_size, color};
 
-fn create_ascii_clock() -> Vec<String> {
-    vec![
-        "    .-.-.    ".to_string(),
-        "  .'     '.  ".to_string(),
-        " /  o   o  \\ ".to_string(),
-        "|    ___    |".to_string(),
-        "|   /   \\   |".to_string(),
-        " \\  \\___/  / ".to_string(),
-        "  '.     .' ".to_string(),
-        "    '---'    ".to_string(),
-    ]
+fn create_ascii_clock(hours: u32, minutes: u32) -> Vec<String> {
+    let mut clock = vec![
+        "      12      ".to_string(),
+        "   11     1   ".to_string(),
+        " 10    |    2 ".to_string(),
+        "9    --+--    3".to_string(),
+        " 8     |    4 ".to_string(),
+        "   7      5   ".to_string(),
+        "      6       ".to_string(),
+    ];
+
+    // Calculate hand positions
+    let hour_angle = (hours % 12) as f32 / 12.0 * 2.0 * std::f32::consts::PI;
+    let minute_angle = minutes as f32 / 60.0 * 2.0 * std::f32::consts::PI;
+
+    let hour_x = (2.0 * hour_angle.sin()).round() as i32;
+    let hour_y = (-2.0 * hour_angle.cos()).round() as i32;
+    let minute_x = (3.0 * minute_angle.sin()).round() as i32;
+    let minute_y = (-3.0 * minute_angle.cos()).round() as i32;
+
+    // Place hour hand
+    if let Some(line) = clock.get_mut((3 + hour_y) as usize) {
+        if let Some(ch) = line.get_mut((7 + hour_x) as usize) {
+            *ch = 'H';
+        }
+    }
+
+    // Place minute hand
+    if let Some(line) = clock.get_mut((3 + minute_y) as usize) {
+        if let Some(ch) = line.get_mut((7 + minute_x) as usize) {
+            *ch = 'M';
+        }
+    }
+
+    clock
 }
 
 #[derive(Parser, Debug)]
@@ -44,8 +68,6 @@ fn main() {
 
     let mut stdout = std::io::stdout();
 
-    let ascii_clock = create_ascii_clock();
-    
     loop {
         let now = Local::now();
         if now >= end_time {
@@ -58,6 +80,8 @@ fn main() {
                                remaining.num_hours(), 
                                remaining.num_minutes() % 60, 
                                remaining.num_seconds() % 60);
+        
+        let ascii_clock = create_ascii_clock(now.hour(), now.minute());
         
         write!(stdout, "{}{}", clear::All, cursor::Goto(1, 1)).unwrap();
         
