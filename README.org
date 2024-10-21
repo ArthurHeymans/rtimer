@@ -13,6 +13,8 @@ rtimer is a command-line countdown timer application written in Rust. It display
 - ASCII clock display with colored hour and minute hands
 - Customizable alarm sound (default: rooster.mp3)
 - Shows remaining time and elapsed time
+- Desktop notifications using libnotify
+- Customizable notification message
 
 ** Installation
 
@@ -43,6 +45,7 @@ rtimer [OPTIONS] <TIME>
 
 Options:
 - =-s, --sound <FILE>=: Path to a custom sound file (default: rooster.mp3)
+- =-m, --message <MESSAGE>=: Custom notification message
 - =-h, --help=: Print help information
 - =-V, --version=: Print version information
 
@@ -63,6 +66,11 @@ Examples:
    rtimer 14:30:00
    #+END_SRC
 
+4. Set a timer for 45 minutes with a custom notification message:
+   #+BEGIN_SRC sh
+   rtimer -m "Coffee break over!" 45m
+   #+END_SRC
+
 ** Dependencies
 
 rtimer uses the following Rust crates:
@@ -70,6 +78,7 @@ rtimer uses the following Rust crates:
 - rodio
 - chrono
 - termion
+- notify-rust
 
 These dependencies are managed by Cargo and will be automatically downloaded and compiled when building the project.
 
