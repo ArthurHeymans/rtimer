@@ -2,6 +2,7 @@
 name = "rtimer"
 version = "0.1.0"
 edition = "2021"
+include = ["src/**/*", "rooster.mp3"]
 
 [dependencies]
 clap = { version = "4.3", features = ["derive"] }

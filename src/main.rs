@@ -53,7 +53,7 @@ fn create_ascii_clock(hours: u32, minutes: u32) -> Vec<String> {
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// Path to the sound file
-    #[arg(short, long)]
+    #[arg(short, long, default_value = "rooster.mp3")]
     sound: PathBuf,
 
     /// Duration of the timer (e.g., 10m, 1h30m) or fixed time (e.g., 09:10:03)
