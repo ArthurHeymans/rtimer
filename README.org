@@ -6,6 +6,8 @@
 
 rtimer is a command-line countdown timer application written in Rust. It displays an ASCII clock and plays a sound when the timer expires.
 
+[[./screenshot.png]]
+
 ** Features
 
 - Set countdown timer with flexible duration formats (e.g., 1h30m, 45m, 30s)
