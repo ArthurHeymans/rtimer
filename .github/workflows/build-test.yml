@@ -1,0 +1,76 @@
+name: Rust CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: --deny warnings
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      commits: ${{ steps.commits.outputs.hashes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Get all commit hashes
+        id: commits
+        run: |
+          echo "hashes=[$(git log -z --pretty=format:"'%H'," ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | sed 's/.$//')]" >> "$GITHUB_OUTPUT"
+  build:
+    name: Build and Test
+    needs: generate-matrix
+    strategy:
+      matrix:
+        toolchain: [stable, beta, nightly]
+        commit: ${{ fromJson(needs.generate-matrix.outputs.commits) }}
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.toolchain == 'nightly' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.commit }}
+      - name: Install toolchain and tools
+        run: |
+          rustup toolchain install ${{ matrix.toolchain }} --profile minimal
+          rustup default ${{ matrix.toolchain }}
+          rustup component add clippy rustfmt
+
+      - name: Install DTC
+        run: |
+          sudo apt-get update -qy
+          sudo apt-get install device-tree-compiler
+
+      - name: Check Code Formatting
+        run: cargo fmt -- --check
+
+      - name: Lint with Clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Run tests
+        run: cargo test --verbose
