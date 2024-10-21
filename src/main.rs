@@ -7,6 +7,7 @@ use rodio::{Decoder, OutputStream, Sink};
 use std::fs::File;
 use std::io::{BufReader, Write};
 use termion::{clear, cursor, terminal_size, color};
+use notify_rust::Notification;
 
 fn create_ascii_clock(hours: u32, minutes: u32) -> Vec<String> {
     let mut clock = vec![
@@ -59,6 +60,10 @@ struct Args {
     /// Duration of the timer (e.g., 10m, 1h30m) or fixed time (e.g., 09:10:03)
     #[arg(value_parser = parse_time_or_duration)]
     time: TimeOrDuration,
+
+    /// Custom notification message
+    #[arg(short, long)]
+    message: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -157,6 +162,14 @@ fn main() {
 
     write!(stdout, "{}{}\nTime's up! Playing sound...\n", clear::All, cursor::Goto(1, 1)).unwrap();
     play_sound(&args.sound);
+    
+    // Send notification
+    let notification_message = args.message.unwrap_or_else(|| "rtimer: time's up!".to_string());
+    Notification::new()
+        .summary("rtimer")
+        .body(&notification_message)
+        .show()
+        .expect("Failed to send notification");
 }
 
 fn parse_duration(s: &str) -> Result<Duration, String> {

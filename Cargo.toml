@@ -9,3 +9,4 @@ clap = { version = "4.3", features = ["derive"] }
 rodio = "0.17"
 chrono = "0.4"
 termion = "2.0"
+notify-rust = "4.8"
