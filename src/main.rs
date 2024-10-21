@@ -5,7 +5,8 @@ use chrono::Local;
 use std::{thread, time};
 use rodio::{Decoder, OutputStream, Sink};
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Write};
+use termion::{clear, cursor, terminal_size};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -26,6 +27,9 @@ fn main() {
     let end_time = start_time + chrono::Duration::from_std(duration).unwrap();
 
     println!("Timer set for {} at {}", args.duration, end_time.format("%H:%M:%S"));
+    thread::sleep(time::Duration::from_secs(2));
+
+    let mut stdout = std::io::stdout();
 
     loop {
         let now = Local::now();
@@ -34,16 +38,33 @@ fn main() {
         }
 
         let remaining = end_time - now;
-        print!("\rTime remaining: {:02}:{:02}:{:02}", 
-               remaining.num_hours(), 
-               remaining.num_minutes() % 60, 
-               remaining.num_seconds() % 60);
-        std::io::Write::flush(&mut std::io::stdout()).unwrap();
-
+        let (width, height) = terminal_size().unwrap();
+        let time_str = format!("{:02}:{:02}:{:02}", 
+                               remaining.num_hours(), 
+                               remaining.num_minutes() % 60, 
+                               remaining.num_seconds() % 60);
+        
+        write!(stdout, "{}{}", clear::All, cursor::Goto(1, 1)).unwrap();
+        
+        for y in 1..=height {
+            for x in 1..=width {
+                if y == height / 2 && x > (width - time_str.len() as u16) / 2 && x <= (width + time_str.len() as u16) / 2 {
+                    let char_index = (x - (width - time_str.len() as u16) / 2 - 1) as usize;
+                    write!(stdout, "{}", time_str.chars().nth(char_index).unwrap()).unwrap();
+                } else {
+                    write!(stdout, " ").unwrap();
+                }
+            }
+            if y < height {
+                write!(stdout, "\r\n").unwrap();
+            }
+        }
+        
+        stdout.flush().unwrap();
         thread::sleep(time::Duration::from_secs(1));
     }
 
-    println!("\nTime's up! Playing sound...");
+    write!(stdout, "{}{}\nTime's up! Playing sound...\n", clear::All, cursor::Goto(1, 1)).unwrap();
     play_sound(&args.sound);
 }
 
