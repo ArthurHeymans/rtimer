@@ -1,8 +1,8 @@
 use clap::Parser;
 use std::path::PathBuf;
 use std::time::Duration;
-use chrono::{Local, Timelike};
-use std::{thread, time};
+use chrono::{Local, Timelike, NaiveTime};
+use std::{thread, time, str::FromStr};
 use rodio::{Decoder, OutputStream, Sink};
 use std::fs::File;
 use std::io::{BufReader, Write};
@@ -56,18 +56,47 @@ struct Args {
     #[arg(short, long)]
     sound: PathBuf,
 
-    /// Duration of the timer (e.g., 10m, 1h30m)
-    duration: String,
+    /// Duration of the timer (e.g., 10m, 1h30m) or fixed time (e.g., 09:10:03)
+    #[arg(value_parser = parse_time_or_duration)]
+    time: TimeOrDuration,
+}
+
+#[derive(Debug)]
+enum TimeOrDuration {
+    Duration(Duration),
+    FixedTime(NaiveTime),
+}
+
+fn parse_time_or_duration(s: &str) -> Result<TimeOrDuration, String> {
+    if let Ok(duration) = parse_duration(s) {
+        Ok(TimeOrDuration::Duration(duration))
+    } else if let Ok(time) = NaiveTime::from_str(s) {
+        Ok(TimeOrDuration::FixedTime(time))
+    } else {
+        Err(format!("Invalid time or duration format: {}", s))
+    }
 }
 
 fn main() {
     let args = Args::parse();
     
-    let duration = parse_duration(&args.duration).expect("Invalid duration format");
-    let start_time = Local::now();
-    let end_time = start_time + chrono::Duration::from_std(duration).unwrap();
+    let (end_time, duration_str) = match args.time {
+        TimeOrDuration::Duration(duration) => {
+            let start_time = Local::now();
+            let end_time = start_time + chrono::Duration::from_std(duration).unwrap();
+            (end_time, format!("{:?}", duration))
+        },
+        TimeOrDuration::FixedTime(time) => {
+            let now = Local::now();
+            let mut end_time = now.date().and_time(time);
+            if end_time <= now {
+                end_time = end_time + chrono::Duration::days(1);
+            }
+            (end_time, time.format("%H:%M:%S").to_string())
+        },
+    };
 
-    println!("Timer set for {} at {}", args.duration, end_time.format("%H:%M:%S"));
+    println!("Timer set for {} at {}", duration_str, end_time.format("%H:%M:%S"));
     thread::sleep(time::Duration::from_secs(2));
 
     let mut stdout = std::io::stdout();
