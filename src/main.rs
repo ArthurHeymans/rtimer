@@ -163,7 +163,7 @@ fn main() {
     write!(stdout, "{}{}\nTime's up!\n", clear::All, cursor::Goto(1, 1)).unwrap();
     
     // Send notification
-    let notification_message = args.message.unwrap_or_else(|| "rtimer: time's up!".to_string());
+    let notification_message = args.message.unwrap_or_else(|| "🐓 rtimer: time's up!".to_string());
     Notification::new()
         .summary("rtimer")
         .body(&notification_message)
