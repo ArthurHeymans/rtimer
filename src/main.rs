@@ -172,7 +172,7 @@ fn main() {
 
     // Play sound
     write!(stdout, "Playing sound...\n").unwrap();
-    play_sound(&args.sound);
+    play_sound();
 }
 
 fn parse_duration(s: &str) -> Result<Duration, String> {
