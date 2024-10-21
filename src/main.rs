@@ -202,12 +202,14 @@ fn parse_duration(s: &str) -> Result<Duration, String> {
     Ok(Duration::from_secs(total_seconds))
 }
 
-fn play_sound(path: &PathBuf) {
+include!(concat!(env!("OUT_DIR"), "/rooster_sound.rs"));
+
+fn play_sound() {
     let (_stream, stream_handle) = OutputStream::try_default().unwrap();
     let sink = Sink::try_new(&stream_handle).unwrap();
 
-    let file = BufReader::new(File::open(path).unwrap());
-    let source = Decoder::new(file).unwrap();
+    let cursor = std::io::Cursor::new(ROOSTER_SOUND);
+    let source = Decoder::new(cursor).unwrap();
     sink.append(source);
 
     sink.sleep_until_end();
